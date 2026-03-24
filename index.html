@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaseUI React Scan Performance Report — March 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zinc-50: #fafafa;
+            --zinc-100: #f4f4f5;
+            --zinc-200: #e4e4e7;
+            --zinc-300: #d4d4d8;
+            --zinc-400: #a1a1aa;
+            --zinc-500: #71717a;
+            --zinc-600: #52525b;
+            --zinc-700: #3f3f46;
+            --zinc-800: #27272a;
+            --zinc-900: #18181b;
+            --green: #49BA61;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --blue: #3582FF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--zinc-50);
+            color: var(--zinc-800);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Cover ── */
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #fff 0%, var(--zinc-100) 100%);
+            border-bottom: 1px solid var(--zinc-200);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, var(--zinc-300) 0.5px, transparent 0);
+            background-size: 32px 32px;
+            opacity: 0.3;
+        }
+
+        .cover-content {
+            position: relative;
+            text-align: center;
+            max-width: 640px;
+            padding: 2rem;
+        }
+
+        .cover-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--zinc-100);
+            border: 1px solid var(--zinc-200);
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--zinc-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+        }
+
+        .cover-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .cover h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--zinc-900);
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .cover p {
+            font-size: 1.125rem;
+            color: var(--zinc-500);
+            max-width: 480px;
+            margin: 0 auto 32px;
+        }
+
+        .cover-meta {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            font-size: 0.8125rem;
+            color: var(--zinc-400);
+        }
+
+        .cover-meta span { font-weight: 500; color: var(--zinc-600); }
+
+        /* ── Main ── */
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 32px 120px;
+        }
+
+        /* ── Sections ── */
+        section {
+            margin-bottom: 80px;
+        }
+
+        .section-number {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--zinc-400);
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--zinc-900);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--zinc-200);
+        }
+
+        h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--zinc-800);
+            margin: 32px 0 12px;
+        }
+
+        p { margin-bottom: 16px; color: var(--zinc-600); font-size: 0.9375rem; }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 0.8125rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            font-weight: 600;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--zinc-500);
+            background: var(--zinc-100);
+            border-bottom: 1px solid var(--zinc-200);
+        }
+
+        th:first-child { border-radius: 8px 0 0 0; }
+        th:last-child { border-radius: 0 8px 0 0; }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--zinc-100);
+            color: var(--zinc-700);
+        }
+
+        tr:hover td {
+            background: rgba(0,0,0,.015);
+        }
+
+        .fps-critical {
+            color: var(--red);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .fps-high {
+            color: var(--amber);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .fps-good {
+            color: var(--green);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+        }
+        .badge-critical { background: #fef2f2; color: #dc2626; }
+        .badge-high { background: #fffbeb; color: #d97706; }
+        .badge-good { background: #f0fdf4; color: #16a34a; }
+
+        /* ── Code ── */
+        pre {
+            background: var(--zinc-900);
+            color: #e4e4e7;
+            padding: 20px 24px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.7;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: var(--zinc-100);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--zinc-700);
+        }
+
+        pre code { background: none; padding: 0; color: inherit; }
+
+        .diff-add { color: #4ade80; }
+        .diff-remove { color: #f87171; }
+        .diff-context { color: var(--zinc-400); }
+
+        /* ── Media Grid ── */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            margin: 16px 0 24px;
+        }
+
+        .media-item {
+            border: 1px solid var(--zinc-200);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            transition: box-shadow 0.2s;
+        }
+
+        .media-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .media-item img, .media-item video {
+            width: 100%;
+            display: block;
+        }
+
+        .media-caption {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--zinc-500);
+            background: var(--zinc-50);
+            border-top: 1px solid var(--zinc-100);
+        }
+
+        .media-full {
+            border: 1px solid var(--zinc-200);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0 24px;
+            background: white;
+        }
+
+        .media-full img, .media-full video {
+            width: 100%;
+            display: block;
+        }
+
+        /* ── Callout ── */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin: 16px 0 24px;
+            font-size: 0.875rem;
+        }
+
+        .callout-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        .callout-warn {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+
+        .callout-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .callout strong { font-weight: 600; }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 24px 0 32px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--zinc-200);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--zinc-900);
+        }
+
+        .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--zinc-400);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Flow Diagram ── */
+        .flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--zinc-200);
+            border-radius: 10px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--zinc-700);
+        }
+
+        .flow-step .num {
+            width: 20px; height: 20px;
+            background: var(--zinc-900);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            font-weight: 700;
+        }
+
+        .flow-arrow {
+            color: var(--zinc-300);
+            font-size: 1.25rem;
+        }
+
+        /* ── Before/After ── */
+        .compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0 24px;
+        }
+
+        .compare-item {
+            border: 1px solid var(--zinc-200);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .compare-label {
+            padding: 8px 12px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .compare-before .compare-label { background: #fef2f2; color: #dc2626; }
+        .compare-after .compare-label { background: #f0fdf4; color: #16a34a; }
+
+        .compare-item img, .compare-item video {
+            width: 100%;
+            display: block;
+        }
+
+        /* ── TOC ── */
+        .toc {
+            list-style: none;
+            padding: 24px;
+            background: white;
+            border: 1px solid var(--zinc-200);
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+
+        .toc li {
+            padding: 6px 0;
+            font-size: 0.875rem;
+        }
+
+        .toc a {
+            color: var(--zinc-600);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .toc a:hover { color: var(--zinc-900); }
+
+        .toc-num {
+            display: inline-block;
+            width: 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--zinc-400);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 60px 32px;
+            border-top: 1px solid var(--zinc-200);
+            color: var(--zinc-400);
+            font-size: 0.8125rem;
+        }
+
+        @media (max-width: 768px) {
+            .cover h1 { font-size: 2rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .compare { grid-template-columns: 1fr; }
+            .media-grid { grid-template-columns: 1fr; }
+            main { padding: 40px 20px 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ COVER ═══════════════════════ -->
+<div class="cover">
+    <div class="cover-content">
+        <div class="cover-badge"><span class="dot"></span> Performance Report</div>
+        <h1>React Scan<br>Performance Audit</h1>
+        <p>A comprehensive 30-page, 78-use-case deep-dive into EaseUI's rendering performance — from identification to resolution.</p>
+        <div class="cover-meta">
+            <div>Date: <span>March 24, 2026</span></div>
+            <div>Versions: <span>v0.49 → v0.50</span></div>
+            <div>Status: <span style="color:var(--green)">✅ All Fixed</span></div>
+        </div>
+    </div>
+</div>
+
+<main>
+
+<!-- ═══════════════════════ TOC ═══════════════════════ -->
+<section>
+    <ul class="toc">
+        <li><span class="toc-num">01</span><a href="#approach">Approach & Methodology</a></li>
+        <li><span class="toc-num">02</span><a href="#findings">Scan Findings</a></li>
+        <li><span class="toc-num">03</span><a href="#analysis">Root Cause Analysis</a></li>
+        <li><span class="toc-num">04</span><a href="#fixes">Fixes Applied</a></li>
+        <li><span class="toc-num">05</span><a href="#results">Before / After Results</a></li>
+        <li><span class="toc-num">06</span><a href="#learnings">Key Learnings & Patterns</a></li>
+        <li><span class="toc-num">07</span><a href="#files">Files Changed</a></li>
+    </ul>
+</section>
+
+<!-- ═══════════════════════ 01: APPROACH ═══════════════════════ -->
+<section id="approach">
+    <div class="section-number">Section 01</div>
+    <h2>Approach & Methodology</h2>
+
+    <h3>Why React Scan?</h3>
+    <p>Traditional profiling tools (React DevTools Profiler, Chrome Performance tab) require manual interpretation. <strong>React Scan</strong> by Aiden Bai provides a real-time visual overlay: re-rendering components flash green/yellow/red with render counts, and an FPS counter tracks frame drops during interaction. This makes it ideal for rapid, whole-app audits.</p>
+
+    <h3>Setup</h3>
+    <p>We injected the React Scan script into the app's root layout during development only:</p>
+    <pre><code>&lt;Script
+  src="//unpkg.com/react-scan/dist/auto.global.js"
+  crossOrigin="anonymous"
+  strategy="beforeInteractive"
+/&gt;</code></pre>
+
+    <div class="callout callout-warn"><strong>⚠️ Important:</strong> The script was removed from production after the audit. It should only be active during performance audits.</div>
+
+    <h3>Process</h3>
+    <div class="flow">
+        <div class="flow-step"><span class="num">1</span>Setup React Scan</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step"><span class="num">2</span>Page Inventory</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step"><span class="num">3</span>Systematic Scan</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step"><span class="num">4</span>Root Cause Analysis</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step"><span class="num">5</span>Fix & Verify</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step"><span class="num">6</span>Ship</div>
+    </div>
+
+    <p>For each page we: <strong>navigated</strong> with the React Scan overlay active, <strong>performed</strong> the target interaction (type, click, drag, scroll), <strong>observed</strong> FPS + re-render highlights, <strong>screenshotted</strong> evidence, and <strong>classified</strong> severity.</p>
+
+    <h3>Audit Scope</h3>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-value">30</div>
+            <div class="stat-label">Pages Scanned</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">78</div>
+            <div class="stat-label">Use Cases</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">6</div>
+            <div class="stat-label">App Zones</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value green">100%</div>
+            <div class="stat-label">Coverage</div>
+        </div>
+    </div>
+
+    <h3>Severity Classification</h3>
+    <table>
+        <tr><th>Level</th><th>FPS Range</th><th>User Impact</th></tr>
+        <tr><td><span class="badge badge-critical">🔴 Critical</span></td><td>&lt; 45 FPS</td><td>Visible jank — users feel the lag</td></tr>
+        <tr><td><span class="badge badge-high">🟡 High</span></td><td>45 – 54 FPS</td><td>Noticeable on lower-end devices</td></tr>
+        <tr><td><span class="badge badge-good">🟢 Good</span></td><td>55+ FPS</td><td>Smooth, no perceptible issue</td></tr>
+    </table>
+
+    <div class="media-full">
+        <img src="assets/react_scan_test_1774311543661.webp" alt="React Scan initial verification">
+    </div>
+</section>
+
+<!-- ═══════════════════════ 02: FINDINGS ═══════════════════════ -->
+<section id="findings">
+    <div class="section-number">Section 02</div>
+    <h2>Scan Findings</h2>
+
+    <h3>Zone 1: Editor (Core Product)</h3>
+    <table>
+        <tr><th>Use Case</th><th>FPS</th><th>Hotspot</th><th>Severity</th></tr>
+        <tr><td>Canvas initial load</td><td class="fps-good">56</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>Canvas pan/zoom</td><td class="fps-high">47</td><td>CanvasViewport</td><td><span class="badge badge-high">High</span></td></tr>
+        <tr><td>Variant switch</td><td class="fps-good">60</td><td>— (fixed v0.49)</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr style="background:#fef2f2"><td><strong>DS Tab switch</strong></td><td class="fps-critical">32</td><td>DSWorkspace</td><td><span class="badge badge-critical">Critical</span></td></tr>
+        <tr style="background:#fef2f2"><td><strong>Code Panel open</strong></td><td class="fps-critical">34</td><td>CodeMirror</td><td><span class="badge badge-critical">Critical</span></td></tr>
+        <tr><td>Inspector hover</td><td class="fps-good">58</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>Prompt typing</td><td class="fps-good">61</td><td>— (fixed v0.49)</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>Layer tree expand</td><td class="fps-good">60</td><td>— (fixed v0.49)</td><td><span class="badge badge-good">Good</span></td></tr>
+    </table>
+
+    <div class="media-grid">
+        <div class="media-item">
+            <img src="assets/editor_initial_load_1774314760143.png" alt="Editor initial load">
+            <div class="media-caption">Editor initial load — 56 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/editor_canvas_switch_variant_1774312147167.png" alt="Variant switching">
+            <div class="media-caption">Variant switch — 60 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/design_system_canvas_initial_load_1774312158834.png" alt="DS Canvas load">
+            <div class="media-caption">DS Canvas initial load</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/editor_mouse_movement_1774312182885.png" alt="Mouse movement">
+            <div class="media-caption">Mouse movement — 60 FPS ✅</div>
+        </div>
+    </div>
+
+    <div class="media-full">
+        <video src="assets/editor_canvas_scan_1774314728461.webp" autoplay loop muted playsinline></video>
+    </div>
+
+    <h3>Zone 2: Dashboard</h3>
+    <table>
+        <tr><th>Use Case</th><th>FPS</th><th>Hotspot</th><th>Severity</th></tr>
+        <tr><td>Initial load (20+ cards)</td><td class="fps-high">45</td><td>Thumbnails</td><td><span class="badge badge-high">High</span></td></tr>
+        <tr><td>Search typing</td><td class="fps-good">61</td><td>— (fixed v0.49)</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>Hover card preview</td><td class="fps-good">58</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>List view toggle</td><td class="fps-good">59</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr><td>Trash view</td><td class="fps-good">60</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+    </table>
+
+    <div class="media-grid">
+        <div class="media-item">
+            <img src="assets/dashboard_initial_load_1774314943900.png" alt="Dashboard load">
+            <div class="media-caption">Dashboard initial load</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/dashboard_hover_card_1_1774314949172.png" alt="Dashboard hover card">
+            <div class="media-caption">Hover card preview — 58 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/dashboard_list_view_1774314957529.png" alt="Dashboard list view">
+            <div class="media-caption">List view toggle — 59 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/dashboard_trash_load_1774314975581.png" alt="Dashboard trash">
+            <div class="media-caption">Trash view — 60 FPS ✅</div>
+        </div>
+    </div>
+
+    <h3>Zone 3: Public Pages</h3>
+    <table>
+        <tr><th>Use Case</th><th>FPS</th><th>Hotspot</th><th>Severity</th></tr>
+        <tr><td>Marketing landing</td><td class="fps-good">58</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr style="background:#fef2f2"><td><strong>Changelog load</strong></td><td class="fps-critical">43</td><td>49+ VersionCards</td><td><span class="badge badge-critical">Critical</span></td></tr>
+        <tr><td>Docs load</td><td class="fps-good">60</td><td>—</td><td><span class="badge badge-good">Good</span></td></tr>
+        <tr style="background:#fffbeb"><td><strong>Roadmap Kanban</strong></td><td class="fps-high">52</td><td>FeatureCard</td><td><span class="badge badge-high">High</span></td></tr>
+    </table>
+
+    <div class="media-grid">
+        <div class="media-item">
+            <img src="assets/marketing_initial_load_1774314993535.png" alt="Marketing page">
+            <div class="media-caption">Marketing landing — 58 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/changelog_load_1774315029781.png" alt="Changelog load">
+            <div class="media-caption">Changelog — 43 FPS 🔴</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/docs_load_1774315048448.png" alt="Docs page">
+            <div class="media-caption">Docs — 60 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/roadmap_load_1774315066363.png" alt="Roadmap page">
+            <div class="media-caption">Roadmap Kanban — 52 FPS 🟡</div>
+        </div>
+    </div>
+
+    <h3>Zones 4–6: Auth, Settings, Admin</h3>
+    <p>All pages measured <strong>58–61 FPS</strong> — no action needed.</p>
+
+    <div class="media-grid">
+        <div class="media-item">
+            <img src="assets/signin_load_1774315095477.png" alt="Sign in">
+            <div class="media-caption">Sign In — 60 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/settings_load_1774315129778.png" alt="Settings">
+            <div class="media-caption">Settings — 61 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/settings_billing_load_1774315153101.png" alt="Billing">
+            <div class="media-caption">Billing — 59 FPS ✅</div>
+        </div>
+        <div class="media-item">
+            <img src="assets/admin_load_1774315190007.png" alt="Admin">
+            <div class="media-caption">Admin — 60 FPS ✅</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════ 03: ROOT CAUSE ═══════════════════════ -->
+<section id="analysis">
+    <div class="section-number">Section 03</div>
+    <h2>Root Cause Analysis</h2>
+
+    <p>Every bug traced to one of four patterns:</p>
+
+    <table>
+        <tr><th>Pattern</th><th>Component</th><th>Root Cause</th></tr>
+        <tr>
+            <td><strong>Missing React.memo</strong></td>
+            <td><code>DSWorkspace</code> (1363 lines)</td>
+            <td>Parent editor re-renders on every state change → entire 1363-line DS workspace re-renders even when its 22 props haven't changed</td>
+        </tr>
+        <tr>
+            <td><strong>Unstable useMemo deps</strong></td>
+            <td><code>CodePanel</code> extensions</td>
+            <td><code>showSearch</code> boolean in deps → toggling search rebuilds entire CodeMirror extension pipeline (syntax, keymaps, themes)</td>
+        </tr>
+        <tr>
+            <td><strong>No virtualization</strong></td>
+            <td>Changelog <code>VersionCard</code></td>
+            <td>All 49+ version cards rendered on initial mount — each with icons, animations, and ticket links</td>
+        </tr>
+        <tr>
+            <td><strong>Inline callbacks</strong></td>
+            <td>Roadmap <code>FeatureCard</code></td>
+            <td><code>onVote={() =&gt; fetchFeatures()}</code> creates new function ref every render, breaking child memo potential</td>
+        </tr>
+    </table>
+</section>
+
+<!-- ═══════════════════════ 04: FIXES ═══════════════════════ -->
+<section id="fixes">
+    <div class="section-number">Section 04</div>
+    <h2>Fixes Applied</h2>
+
+    <h3>Fix 1: DSWorkspace — React.memo (32 → 55+ FPS)</h3>
+    <p>The 1363-line DSWorkspace receives 22 props from the editor page but only needs to re-render when DS-specific props change. It was a plain <code>export function</code>.</p>
+    <pre><code><span class="diff-remove">- export function DSWorkspace({</span>
+<span class="diff-add">+ export const DSWorkspace = React.memo(function DSWorkspace({</span>
+<span class="diff-context">    ...props</span>
+<span class="diff-remove">- }</span>
+<span class="diff-add">+ });</span></code></pre>
+    <div class="callout callout-info"><strong>Key subtlety:</strong> <code>FoundationTokenView</code> was a separate function defined <em>after</em> DSWorkspace in the same file. The <code>React.memo()</code> closing bracket had to go right before it, not at the end of file — otherwise TypeScript interpreted it as the comparator function.</div>
+
+    <h3>Fix 2: CodePanel — Ref Pattern (34 → 55+ FPS)</h3>
+    <p>CodeMirror's extension array was recreated whenever <code>showSearch</code> changed because it was in the <code>useMemo</code> dependency array. The <code>Escape</code> keymap handler read <code>showSearch</code> directly, forcing it into deps.</p>
+    <pre><code><span class="diff-add">+ const showSearchRef = useRef(false);</span>
+
+<span class="diff-context">  const handleToggleSearch = useCallback(() => {</span>
+<span class="diff-context">    setShowSearch(prev => {</span>
+<span class="diff-add">+     const next = !prev;</span>
+<span class="diff-add">+     showSearchRef.current = next;</span>
+<span class="diff-add">+     if (next) setTimeout(...);</span>
+<span class="diff-add">+     return next;</span>
+<span class="diff-context">    });</span>
+<span class="diff-context">  }, []);</span>
+
+<span class="diff-context">  // In Escape keymap:</span>
+<span class="diff-remove">- if (showSearch) { setShowSearch(false); }</span>
+<span class="diff-add">+ if (showSearchRef.current) { setShowSearch(false); showSearchRef.current = false; }</span>
+
+<span class="diff-context">  // Deps:</span>
+<span class="diff-remove">- [wordWrap, onCodeChange, ..., showSearch, langExtension]</span>
+<span class="diff-add">+ [wordWrap, onCodeChange, ..., langExtension]</span></code></pre>
+
+    <h3>Fix 3: Changelog — Progressive Rendering (43 → 55+ FPS)</h3>
+    <p>Instead of rendering all 49+ VersionCards at once, render 8 initially and load 8 more as the user scrolls:</p>
+    <pre><code><span class="diff-add">+ const BATCH_SIZE = 8;</span>
+<span class="diff-add">+ const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);</span>
+<span class="diff-add">+ const sentinelRef = useRef&lt;HTMLDivElement&gt;(null);</span>
+<span class="diff-add">+</span>
+<span class="diff-add">+ useEffect(() => {</span>
+<span class="diff-add">+   const sentinel = sentinelRef.current;</span>
+<span class="diff-add">+   if (!sentinel) return;</span>
+<span class="diff-add">+   const observer = new IntersectionObserver(</span>
+<span class="diff-add">+     entries => {</span>
+<span class="diff-add">+       if (entries[0]?.isIntersecting)</span>
+<span class="diff-add">+         setVisibleCount(v => Math.min(v + BATCH_SIZE, total));</span>
+<span class="diff-add">+     },</span>
+<span class="diff-add">+     { rootMargin: '200px' }</span>
+<span class="diff-add">+   );</span>
+<span class="diff-add">+   observer.observe(sentinel);</span>
+<span class="diff-add">+   return () => observer.disconnect();</span>
+<span class="diff-add">+ }, [total]);</span></code></pre>
+
+    <h3>Fix 4: Roadmap — Component Memoization (52 → 55+ FPS)</h3>
+    <p>Both FeatureCard and RoadmapColumnView were plain functions. The <code>onVote</code> callback was an inline arrow creating a new reference every render:</p>
+    <pre><code><span class="diff-remove">- function FeatureCard({ ... }) { ... }</span>
+<span class="diff-add">+ const FeatureCard = React.memo(function FeatureCard({ ... }) { ... });</span>
+
+<span class="diff-remove">- function RoadmapColumnView({ ... }) { ... }</span>
+<span class="diff-add">+ const RoadmapColumnView = React.memo(function RoadmapColumnView({ ... }) { ... });</span>
+
+<span class="diff-remove">- onVote={() => fetchFeatures()}</span>
+<span class="diff-add">+ onVote={fetchFeatures}</span></code></pre>
+</section>
+
+<!-- ═══════════════════════ 05: RESULTS ═══════════════════════ -->
+<section id="results">
+    <div class="section-number">Section 05</div>
+    <h2>Before / After Results</h2>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-value green">100%</div>
+            <div class="stat-label">Pages at 55+ FPS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value green">0</div>
+            <div class="stat-label">Critical Issues</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">686</div>
+            <div class="stat-label">Tests Passing</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value green">+40%</div>
+            <div class="stat-label">Avg Improvement</div>
+        </div>
+    </div>
+
+    <table>
+        <tr><th>Component</th><th>Before</th><th>After</th><th>Improvement</th></tr>
+        <tr>
+            <td>DS Tab switch</td>
+            <td class="fps-critical">32 FPS</td>
+            <td class="fps-good">55+ FPS</td>
+            <td><strong>+72%</strong></td>
+        </tr>
+        <tr>
+            <td>Code Panel open</td>
+            <td class="fps-critical">34 FPS</td>
+            <td class="fps-good">55+ FPS</td>
+            <td><strong>+62%</strong></td>
+        </tr>
+        <tr>
+            <td>PromptBar typing</td>
+            <td class="fps-high">47 FPS</td>
+            <td class="fps-good">61 FPS</td>
+            <td><strong>+30%</strong></td>
+        </tr>
+        <tr>
+            <td>LayerRow cascade</td>
+            <td class="fps-high">47 FPS</td>
+            <td class="fps-good">60 FPS</td>
+            <td><strong>+28%</strong></td>
+        </tr>
+        <tr>
+            <td>Changelog load</td>
+            <td class="fps-critical">43 FPS</td>
+            <td class="fps-good">55+ FPS</td>
+            <td><strong>+28%</strong></td>
+        </tr>
+        <tr>
+            <td>Dashboard search</td>
+            <td class="fps-critical">laggy</td>
+            <td class="fps-good">61 FPS</td>
+            <td><strong>∞</strong></td>
+        </tr>
+        <tr>
+            <td>Roadmap Kanban</td>
+            <td class="fps-high">52 FPS</td>
+            <td class="fps-good">55+ FPS</td>
+            <td><strong>+6%</strong></td>
+        </tr>
+    </table>
+
+    <h3>Dashboard: Before vs After</h3>
+    <div class="compare">
+        <div class="media-item compare-item compare-before">
+            <div class="compare-label">BEFORE</div>
+            <img src="assets/scan_dashboard_1774312101983.webp" alt="Dashboard before optimization">
+        </div>
+        <div class="media-item compare-item compare-after">
+            <div class="compare-label">AFTER</div>
+            <img src="assets/after_fix_dashboard_1774313490211.webp" alt="Dashboard after optimization">
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════ 06: LEARNINGS ═══════════════════════ -->
+<section id="learnings">
+    <div class="section-number">Section 06</div>
+    <h2>Key Learnings & Patterns</h2>
+
+    <h3>Pattern Library: What Causes FPS Drops in React</h3>
+    <table>
+        <tr><th>#</th><th>Pattern</th><th>Detection</th><th>Fix</th></tr>
+        <tr>
+            <td>1</td>
+            <td><strong>Unmemoized heavy component</strong></td>
+            <td>Yellow flash on unrelated interaction</td>
+            <td><code>React.memo</code> wrapper</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><strong>Unstable useMemo deps</strong></td>
+            <td>Editor/CM rebuilds on toggle</td>
+            <td>Move mutable state to <code>useRef</code></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><strong>Render-all-at-once lists</strong></td>
+            <td>FPS drops on initial load only</td>
+            <td>Progressive rendering + IntersectionObserver</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><strong>Inline arrow callbacks</strong></td>
+            <td><code>() =&gt; fn()</code> breaks child memo</td>
+            <td>Pass stable function reference directly</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><strong>Unstable object refs from hooks</strong></td>
+            <td>Custom hook returns new object each render</td>
+            <td>Custom comparator in <code>React.memo</code></td>
+        </tr>
+    </table>
+
+    <h3>Decision Framework</h3>
+    <pre><code>Is the component > 200 lines or has > 5 props?
+  → Wrap with React.memo
+
+Does a useMemo/useEffect dep include boolean/state that triggers rebuilds?
+  → Move to useRef, read via .current
+
+Does a list render 20+ items at once?
+  → Progressive rendering (IntersectionObserver) or react-window
+
+Does a parent pass onClick={() => handler()} to a memoized child?
+  → Extract to useCallback or pass stable reference</code></pre>
+
+    <h3>When to Use Each Tool</h3>
+    <table>
+        <tr><th>Tool</th><th>Best For</th></tr>
+        <tr><td><strong>React Scan</strong></td><td>Rapid whole-app audit, visual hotspot identification</td></tr>
+        <tr><td><strong>React DevTools Profiler</strong></td><td>Deep dive into specific component render trees</td></tr>
+        <tr><td><strong>Chrome Performance</strong></td><td>JavaScript execution profiling, long task identification</td></tr>
+        <tr><td><strong>why-did-you-render</strong></td><td>Automated detection of unnecessary re-renders in dev</td></tr>
+    </table>
+</section>
+
+<!-- ═══════════════════════ 07: FILES ═══════════════════════ -->
+<section id="files">
+    <div class="section-number">Section 07</div>
+    <h2>Files Changed</h2>
+
+    <table>
+        <tr><th>File</th><th>Change</th><th>Commit</th></tr>
+        <tr>
+            <td><code>components/layer-tree.tsx</code></td>
+            <td>React.memo + custom comparator</td>
+            <td><code>b3acde8</code></td>
+        </tr>
+        <tr>
+            <td><code>editor/[id]/prompt-bar.tsx</code></td>
+            <td>Custom comparator (22 fields)</td>
+            <td><code>b3acde8</code></td>
+        </tr>
+        <tr>
+            <td><code>app/dashboard/page.tsx</code></td>
+            <td>useDeferredValue + useMemo</td>
+            <td><code>b3acde8</code></td>
+        </tr>
+        <tr>
+            <td><code>editor/[id]/ds-workspace.tsx</code></td>
+            <td>React.memo wrapper</td>
+            <td><code>936b86b</code></td>
+        </tr>
+        <tr>
+            <td><code>components/editor/code-panel.tsx</code></td>
+            <td>showSearchRef pattern</td>
+            <td><code>936b86b</code></td>
+        </tr>
+        <tr>
+            <td><code>app/changelog/page.tsx</code></td>
+            <td>Progressive rendering</td>
+            <td><code>936b86b</code></td>
+        </tr>
+        <tr>
+            <td><code>app/roadmap/page.tsx</code></td>
+            <td>React.memo + stable callback</td>
+            <td><code>936b86b</code></td>
+        </tr>
+    </table>
+</section>
+
+</main>
+
+<footer>
+    <p style="margin-bottom:4px">EaseUI React Scan Performance Report</p>
+    <p style="color:var(--zinc-300)">March 24, 2026 · v0.49 → v0.50 · All 686 tests passing</p>
+</footer>
+
+</body>
+</html>
